@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  flask-api:
+    build: .
+    ports:
+      - "8080:8080" # Expose port 8080 for API
+    depends_on:
+      - db # Ensure Flask starts after the database is ready
+    restart: always
+
+  db:
+    image: mysql:5.7 # MySQL version 5.7
+    environment:
+      MYSQL_ROOT_PASSWORD: ikh123 # MySQL root password
+      MYSQL_DATABASE: coba1 # Database name to create
+    ports:
+      - "3307:3306" # Expose MySQL on port 3307
+    restart: always
+
+networks:
+  default:
+    driver: bridge

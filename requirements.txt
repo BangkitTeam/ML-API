@@ -1,0 +1,4 @@
+Flask>=2.3.0
+tensorflow
+pymysql>=1.0.2
+gunicorn>=20.1.0
