@@ -1,25 +1,25 @@
-# Use official Python image
-FROM python:3.9-slim
+# Gunakan image Python resmi versi 3.11-slim atau 3.10-slim
+FROM python:3.11-slim
 
-# Set the working directory in the container
+# Set working directory di dalam container
 WORKDIR /app
 
-# Install system dependencies for image processing (and any others you might need)
-RUN apt-get update && apt-get install -y \
+# Install system dependencies untuk image processing dan membersihkan apt cache untuk mengurangi ukuran image
+RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 libsm6 libxext6 libxrender-dev \
-    && rm -rf /var/lib/apt/lists/*
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copy only the requirements.txt first to leverage Docker cache
+# Salin file requirements.txt terlebih dahulu agar Docker bisa memanfaatkan cache untuk dependencies
 COPY requirements.txt .
 
-# Install the Python dependencies
+# Install dependencies Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Now copy the rest of the application code into the container
+# Salin semua file aplikasi ke dalam container
 COPY . .
 
-# Expose the port the app will run on
+# Expose port tempat Flask app akan dijalankan
 EXPOSE 8080
 
-# Use gunicorn to run the Flask app in production mode
+# Command default untuk menjalankan Flask app dengan gunicorn
 CMD ["gunicorn", "-b", "0.0.0.0:8080", "app:app"]

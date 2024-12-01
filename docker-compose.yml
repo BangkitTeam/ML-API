@@ -4,18 +4,23 @@ services:
   flask-api:
     build: .
     ports:
-      - "8080:8080" # Expose port 8080 for API
+      - "8080:8080"
     depends_on:
-      - db # Ensure Flask starts after the database is ready
+      - db
+    environment:
+      DB_HOST: host.docker.internal      # Host database di dalam jaringan Docker
+      DB_USER: root     # Username untuk database
+      DB_PASSWORD: ikh123
+      DB_NAME: coba1
     restart: always
 
   db:
-    image: mysql:5.7 # MySQL version 5.7
+    image: mysql:5.7
     environment:
-      MYSQL_ROOT_PASSWORD: ikh123 # MySQL root password
-      MYSQL_DATABASE: coba1 # Database name to create
+      MYSQL_ROOT_PASSWORD: ikh123
+      MYSQL_DATABASE: coba1
     ports:
-      - "3307:3306" # Expose MySQL on port 3307
+      - "3307:3306"
     restart: always
 
 networks:
