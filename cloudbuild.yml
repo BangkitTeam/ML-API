@@ -22,7 +22,7 @@ steps:
       - "asia-southeast2"
       - "--allow-unauthenticated"
       - "--set-env-vars"
-      - "MODEL_PATH="model.h5"
+      - "MODEL_PATH="url model.h5"
 
 images:
   - "asia.gcr.io/$PROJECT_ID/flask-api-2:latest"
