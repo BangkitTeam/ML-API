@@ -1,2 +1,2 @@
 # ML-API
-API to connect between backend and machine learning side
+API to predict trash classification from machine learning model
