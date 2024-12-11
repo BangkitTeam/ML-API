@@ -1,4 +1,4 @@
-# Gunakan image Python resmi versi 3.11-slim atau 3.10-slim
+# Gunakan image Python resmi versi 3.11-slim 
 FROM python:3.11-slim
 
 # Set working directory di dalam container
