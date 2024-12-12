@@ -1,3 +1,4 @@
+
 import os
 import logging
 import tensorflow as tf
@@ -7,7 +8,6 @@ import requests
 from io import BytesIO
 from PIL import Image
 from dotenv import load_dotenv
-import tempfile
 
 # Memuat variabel dari file .env
 load_dotenv()
@@ -29,20 +29,23 @@ class_names = [
     'tire', 'watergallon'
 ]
 
-# Function to download model from URL and load it into TensorFlow
 def download_model_from_url(model_url):
     try:
+        model_path = "model.h5"
+        
+        if os.path.exists(model_path):
+            logging.debug(f"Model already exists locally at {model_path}")
+            return tf.keras.models.load_model(model_path) 
+        
         logging.debug(f"Downloading model from URL: {model_url}")
-        response = requests.get(model_url)
+        response = requests.get(model_url) 
+        
         if response.status_code == 200:
-            # Simpan model yang diunduh ke file sementara
-            with tempfile.NamedTemporaryFile(delete=False, suffix='.h5') as temp_model_file:
-                temp_model_file.write(response.content)
-                temp_model_path = temp_model_file.name
-                logging.debug(f"Model successfully downloaded and saved to {temp_model_path}")
+            with open(model_path, 'wb') as model_file:
+                model_file.write(response.content)
+            logging.debug(f"Model successfully downloaded and saved to {model_path}")
             
-            # Muat model menggunakan path file sementara
-            model = tf.keras.models.load_model(temp_model_path)
+            model = tf.keras.models.load_model(model_path)
             logging.debug("Model successfully loaded.")
             return model
         else:
@@ -51,14 +54,13 @@ def download_model_from_url(model_url):
         logging.error(f"Error downloading model: {e}")
         raise e
 
-# Muat model menggunakan URL yang diambil dari .env
 model = download_model_from_url(model_url)
 
-# Function to download image from URL
 def download_image_from_url(url):
     try:
         logging.debug(f"Downloading image from URL: {url}") 
         response = requests.get(url)
+        
         if response.status_code == 200:
             image = Image.open(BytesIO(response.content))
             logging.debug(f"Image successfully downloaded from {url}")
@@ -69,19 +71,17 @@ def download_image_from_url(url):
         logging.error(f"Error downloading image: {e}")
         raise e
 
-# Function to preprocess image to match model input
 def preprocess_image(image):
-    image = image.resize((128, 128))  # Resize image to match model
+    image = image.resize((128, 128))
     image = np.array(image)
 
-    if image.ndim == 2:  # If image is grayscale, convert to RGB
+    if image.ndim == 2:
         image = np.stack([image] * 3, axis=-1)
 
-    image = image.astype('float32') / 255.0  # Normalize image
-    image = np.expand_dims(image, axis=0)  # Add batch dimension
+    image = image.astype('float32') / 255.0
+    image = np.expand_dims(image, axis=0)
     return image
 
-# Endpoint for image prediction
 @app.route('/predict', methods=['POST'])
 def predict_image():
     try:
@@ -102,16 +102,14 @@ def predict_image():
 
         logging.debug(f"Image shape after preprocessing: {image.shape}")
 
-        # Perform prediction using the model
         predictions = model.predict(image)
         
         predicted_class = np.argmax(predictions, axis=1)[0]
         predicted_label = class_names[predicted_class]
-        confidence = int(np.max(predictions) * 100)  # Convert to percentage without decimals
+        confidence = int(np.max(predictions) * 100)
 
         logging.debug(f"Predicted Class: {predicted_label} with confidence {confidence}")
 
-        # Return prediction response
         return jsonify({
             "image_url": image_url,
             "prediction": predicted_label,
@@ -125,6 +123,5 @@ def predict_image():
         logging.error(f"Unexpected error: {e}")
         return jsonify({"error": f"Unexpected server error: {str(e)}"}), 500
 
-# Run Flask application
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=8080)
